@@ -7,7 +7,16 @@
 
 import UIKit
 
+// Отобразим в главном меню результат игры. Для этого добавим протокол GameViewControllerDelegate
+protocol GameViewControllerDelegate: AnyObject {
+    func didEndGame(withResult result: GameSession)
+}
+
 class GameViewController: UIViewController {
+
+    // MARK: - Delegates.
+    // В класс GameViewController добавим свойство (обработчик событий от сцены)
+    weak var gameDelegate: GameViewControllerDelegate?
     
     @IBOutlet weak var amountMoneyWonLabel: UILabel!
     @IBOutlet weak var currentQuestionNumberLabel: UILabel!
@@ -65,7 +74,6 @@ class GameViewController: UIViewController {
         """
     
     // MARK: - Private methods.
-    
     private func addButtonActions() {
         
         for button in answerButtons {
@@ -105,56 +113,12 @@ class GameViewController: UIViewController {
         gameSession.currentQuestion = question
     }
     
-    private func disableButtons(_ answerIndex: Int) {
-        
-        fiftyFiftyButton.isEnabled = false
-        fiftyFiftyButton.alpha = 0.75
-        
-        hallHelpButton.isEnabled = false
-        hallHelpButton.alpha = 0.75
-        
-        callFriendButton.isEnabled = false
-        callFriendButton.alpha = 0.75
-
-        takeMoneyButton.isEnabled = false
-        takeMoneyButton.alpha = 0.75
-        
-        for button in answerButtons {
-            button?.isEnabled = false
-            button?.alpha = button?.tag != answerIndex ? 0.75 : 1.0
-        }
-    }
-    
     private func isCorrect(_ answerIndex: Int) -> Bool {
         
         return gameSession.currentQuestion?.answers[answerIndex].correct ?? false
     }
     
     private func updateButtons() {
-        
-        if gameSession.fiftyFiftyUsed {
-            fiftyFiftyButton.isEnabled = false
-            fiftyFiftyButton.alpha = 0.75
-        } else {
-            fiftyFiftyButton.isEnabled = true
-            fiftyFiftyButton.alpha = 1.0
-        }
-        
-        if gameSession.hallHelpUsed {
-            hallHelpButton.isEnabled = false
-            hallHelpButton.alpha = 0.75
-        } else {
-            hallHelpButton.isEnabled = true
-            hallHelpButton.alpha = 1.0
-        }
-        
-        if gameSession.callFriendUsed {
-            callFriendButton.isEnabled = false
-            callFriendButton.alpha = 0.75
-        } else {
-            callFriendButton.isEnabled = true
-            callFriendButton.alpha = 1.0
-        }
 
         if gameSession.earnedMoney == 0 {
             
@@ -175,8 +139,7 @@ class GameViewController: UIViewController {
     @objc func answerButtonAction(_ sender: UIButton!) {
         
         let answerIndex = sender.tag
-     
-        disableButtons(answerIndex)
+
         answerButtons[answerIndex]?.backgroundColor = .answered
         
         delay { [self] in
@@ -205,7 +168,6 @@ class GameViewController: UIViewController {
         let secondIndex = Int.random(in: 0...3, excluding: firstIndex)
         
         fiftyFiftyButton.isEnabled = false
-        fiftyFiftyButton.alpha = 0.75
         gameSession.fiftyFiftyUsed = true
         
         for button in answerButtons {
@@ -228,15 +190,14 @@ class GameViewController: UIViewController {
         if gameSession.hallHelpUsed { audienceSuggests = firstIndex } else {
             audienceSuggests = Int.random(in: 0...1) == 1 ? firstIndex : secondIndex
         }
-        
+
         hallHelpButton.isEnabled = false
-        hallHelpButton.alpha = 0.75
         gameSession.hallHelpUsed = true
         
-        let answer = game.letterForAnswerIndex[audienceSuggests] ?? "Х/З"
+        let answer = game.letterForAnswerIndex[audienceSuggests] ?? ""
         
         delay { [self] in
-            displayAlert(withAlertTitle: audienceTitle,
+            alertWrongAnswer(withAlertTitle: audienceTitle,
                          andMessage: audienceMessage + "\(answer).")
         }
     }
@@ -253,23 +214,22 @@ class GameViewController: UIViewController {
         }
         
         callFriendButton.isEnabled = false
-        callFriendButton.alpha = 0.75
         gameSession.callFriendUsed = true
         
-        let answer = game.letterForAnswerIndex[friendSuggests] ?? "Х/З"
-        let answerText = gameSession.currentQuestion?.answers[friendSuggests].text ?? "Х/3"
+        let answer = game.letterForAnswerIndex[friendSuggests] ?? ""
+        let answerText = gameSession.currentQuestion?.answers[friendSuggests].text ?? ""
         
         delay { [self] in
-            displayAlert(withAlertTitle: friendTitle,
+            alertWrongAnswer(withAlertTitle: friendTitle,
                          andMessage: friendMessage + "\(answer). \(answerText).")
         }
     }
     
     @IBAction func takeMoneyAction(_ sender: Any) {
         
-        displayYesNoAlert(withAlertTitle: endGameTitle,
+        alertExit(withAlertTitle: endGameTitle,
                           andMessage: endGameMessage) { _ in
-            _ = self.navigationController?.popToRootViewController(animated: true)
+            self.didEndGame(withResult: self.gameSession)
         }
     }
 
@@ -289,8 +249,8 @@ class GameViewController: UIViewController {
         answerButtons[gameSession.currentQuestion?.correctIndex ?? 0]?.alpha = 1.0
         
         delay { [self] in
-            displayAlert(withAlertTitle: gameOverTitle, andMessage: gameOverMessage) { _ in
-                _ = navigationController?.popToRootViewController(animated: true)
+            alertWrongAnswer(withAlertTitle: gameOverTitle, andMessage: gameOverMessage) { _ in
+                self.didEndGame(withResult: self.gameSession)
             }
         }
     }
@@ -301,7 +261,7 @@ class GameViewController: UIViewController {
         answerButtons[gameSession.currentQuestion!.correctIndex]?.alpha = 1.0
 
         delay { [self] in
-            displayAlert(withAlertTitle: gameWinTitle, andMessage: gameWinMessage) { _ in
+            alertWrongAnswer(withAlertTitle: gameWinTitle, andMessage: gameWinMessage) { _ in
                 _ = navigationController?.popToRootViewController(animated: true)
             }
         }
@@ -320,3 +280,15 @@ class GameViewController: UIViewController {
         displayQuestion()
     }
 }
+
+// По окончании игры будем не только закрывать экран, но и дальше прокидывать результат уже делегату вью-контроллера.
+extension GameViewController: GameViewControllerDelegate {
+
+    internal func didEndGame(withResult session: GameSession) {
+        gameDelegate?.didEndGame(withResult: session)
+        _ = self.navigationController?.popToRootViewController(animated: true)
+        self.dismiss(animated: true, completion: nil)
+    }
+}
+
+

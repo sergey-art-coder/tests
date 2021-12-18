@@ -37,31 +37,7 @@ extension Int {
 extension Question {
     
     var correctIndex: Int {
-        
         return self.answers.firstIndex(where:  { $0.correct }) ?? 0
-    }
-}
-
-// MARK: - GameSession extensions.
-
-extension GameSession {
-    
-    var earnedMoney: Int {
-        
-        let game = Game.shared
-        return game.payout[self.currentQuestionNo - 1] ?? 0
-    }
-    
-    var earnedMoneyGuaranteed: Int {
-        
-        let game = Game.shared
-        
-        switch self.currentQuestionNo {
-        case 0...5: return 0
-        case 6...10: return game.payout[5] ?? 0
-        case 11...15: return game.payout[10] ?? 0
-        default: return 0
-        }
     }
 }
 
@@ -75,34 +51,25 @@ extension UIColor {
     static var incorrect: UIColor { return .systemPink }
 }
 
-// MARK: - Alert extensions.
-
-extension UIViewController {
-    
-    func displayAlert(withAlertTitle alertTitle: String, andMessage message: String, _ completion: ((UIAlertAction)->Void)? = nil) {
-        
-        let alert = UIAlertController(title: alertTitle, message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: "Окей", style: .default, handler: completion)
-        alert.addAction(okAction)
-        self.present(alert, animated: true, completion: nil)
-    }
-    
-    func displayYesNoAlert(withAlertTitle alertTitle: String, andMessage message: String, _ completion: ((UIAlertAction)->Void)? = nil) {
-        
-        let alert = UIAlertController(title: alertTitle, message: message, preferredStyle: .alert)
-        let yesAction = UIAlertAction(title: "Да!", style: .default, handler: completion)
-        let noAction = UIAlertAction(title: "Нет!", style: .cancel, handler: nil)
-        alert.addAction(yesAction)
-        alert.addAction(noAction)
-        self.present(alert, animated: true, completion: nil)
-    }
-}
-
 // MARK: - Delay function.
-
 func delay(closure: @escaping ()->()) {
 
     let game = Game.shared
     let when = DispatchTime.now() + game.delayInterval
     DispatchQueue.main.asyncAfter(deadline: when, execute: closure)
+}
+
+
+// MARK: - Форматирование даты/времени в соответствии локализации ru_RU.
+extension Double {
+    func getDateStringFromUTC() -> String {
+        let date = Date(timeIntervalSince1970: self)
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "ru_RU")
+        dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .short
+        
+        return dateFormatter.string(from: date)
+    }
 }
