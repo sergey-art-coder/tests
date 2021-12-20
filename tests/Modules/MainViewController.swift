@@ -10,14 +10,13 @@ import RealmSwift
 import SwiftUI
 
 class MainViewController: UIViewController {
-    
+
     @IBOutlet weak var resultLabel: UILabel!
     @IBOutlet weak var versionLabel: UILabel!
     
     let game = Game.shared
-    
+
     override func viewDidLoad() {
-        
         super.viewDidLoad()
         navigationController?.isNavigationBarHidden = true
         
@@ -52,24 +51,26 @@ extension MainViewController: GameViewControllerDelegate {
         let earnedMoney = (game.gameSession?.earnedMoneyGuaranteed ?? 0)
         let correctAnswers = ((game.gameSession?.currentQuestionNo ?? 0) - 1)
         let percentageCorrectAnswers = (game.percentage)
-        
-        let fiftyFifty = (game.gameSession?.fiftyFiftyUsed ?? false ? 1 : 0)
-        let hallHelp = (game.gameSession?.hallHelpUsed ?? false ? 1 : 0)
-        let callFriend = (game.gameSession?.callFriendUsed ?? false ? 1 : 0)
+
+        let fiftyFifty = (game.gameSession?.fiftyFiftyUsed ?? false ?  "Да" : "Нет")
+        let hallHelp = (game.gameSession?.hallHelpUsed ?? false ? "Да" : "Нет")
+        let callFriend = (game.gameSession?.callFriendUsed ?? false ? "Да" : "Нет")
 
         resultLabel.text = """
         РЕЗУЛЬТАТ ПОСЛЕДНЕЙ ИГРЫ
-        Заработано: \(earnedMoney) ₽
-        Правильные ответы: \(correctAnswers) из \(game.questionsTotal)
-        \n \(percentageCorrectAnswers)% от общего числа вопросов получили правильные ответы
+        Заработано: \(result.earnedMoneyGuaranteed ) ₽
+        Правильные ответы: \((result.currentQuestionNo ) - 1) из \(game.questionsTotal)
+        \n \(game.percentage)% от общего числа вопросов получили правильные ответы
         
         ПОДСКАЗКИ
-        50/50: \(game.gameSession?.fiftyFiftyUsed ?? false ? "Да" : "Нет")
-        Помощь зала: \(game.gameSession?.hallHelpUsed ?? false ? "Да" : "Нет")
-        Звонок другу: \(game.gameSession?.callFriendUsed ?? false ? "Да" : "Нет")
+        50/50: \(result.fiftyFiftyUsed ? "Да" : "Нет")
+        Помощь зала: \(result.hallHelpUsed ? "Да" : "Нет")
+        Звонок другу: \(result.callFriendUsed ? "Да" : "Нет")
 
         """
-        let record = Record(date: Date(), earnedMoney: earnedMoney, correctAnswers: correctAnswers, percentageCorrectAnswers: percentageCorrectAnswers, fiftyFifty: fiftyFifty, hallHelp: hallHelp, callFriend: callFriend)
+//        let record = Record(date: Date(), earnedMoney: earnedMoney, correctAnswers: correctAnswers, percentageCorrectAnswers: percentageCorrectAnswers, fiftyFifty: fiftyFifty, hallHelp: hallHelp, callFriend: callFriend)
+        let record = Record()
+
         GameSingltone.shared.addRecord(record)
         
     }

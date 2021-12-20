@@ -59,3 +59,5 @@ final class Game {
         return self.gameSession?.currentQuestion?.answers[self.gameSession?.currentQuestion?.correctIndex ?? 0].text ?? ""
     }
 }
+
+

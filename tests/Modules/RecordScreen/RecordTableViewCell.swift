@@ -19,6 +19,13 @@ class RecordTableViewCell: UITableViewCell {
     @IBOutlet weak var hintsLabel: UILabel!
 
     weak var cellDelegate: RecordTableViewCellDelegate?
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        currentQuestionNoLabel.text = ""
+        dataLabel.text = ""
+        hintsLabel.text = ""
+    }
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -27,7 +34,7 @@ class RecordTableViewCell: UITableViewCell {
         currentQuestionNoLabel.addGestureRecognizer(tapGesture)
         currentQuestionNoLabel.isUserInteractionEnabled = true
     }
-
+    
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
     }

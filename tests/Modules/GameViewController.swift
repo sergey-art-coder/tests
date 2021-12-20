@@ -34,7 +34,6 @@ class GameViewController: UIViewController {
     
     @IBOutlet weak var takeMoneyButton: UIButton!
 
-    
     // MARK: - Array of answer buttons.
     
     lazy var answerButtons = [answerButtonA, answerButtonB, answerButtonC, answerButtonD]
@@ -70,7 +69,7 @@ class GameViewController: UIViewController {
     
     let gameWinTitle = "Поздравляю! Вы выиграли"
     let gameWinMessage = """
-        Поздравляю! Вы выиграли три миллиона рублей!
+        Поздравляю! Вы выиграли один миллион рублей!
         """
     
     // MARK: - Private methods.
@@ -269,10 +268,8 @@ class GameViewController: UIViewController {
     
     // MARK: - View controller methods.
     
-    override func viewDidLoad() {
-        
+    override func viewDidLoad() {        
         super.viewDidLoad()
-        
         navigationController?.isNavigationBarHidden = true
         
         resetGameSession()

@@ -18,14 +18,16 @@ final class GameSingltone {
         }
     }
 
-    private let recordsCaretaker = GameCaretaker()
+    private let recordsCaretaker: GameCaretakerProtocol
 
     private init() {
+        self.recordsCaretaker = GameCaretakerRealm()
         self.records = self.recordsCaretaker.retrieveRecords()
     }
     
     func addRecord(_ record: Record) {
         self.records.append(record)
+//        print(record)
     }
     
     func clearRecords() {
